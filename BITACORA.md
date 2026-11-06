@@ -12,6 +12,7 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 ## 📡 1. Estado Actual del Entorno y Proyecto
 
 * **Directorio del Proyecto**: `/home/tecnologia17/desarrollo/inventory-telemetry-agent`
+* **Repositorio Remoto (GitHub)**: `https://github.com/MauricioP90/inventory-telemetry-agent.git` (Rama: `main`) -> **Activo y Sincronizado**.
 * **Java Runtime en Máquina Host**: `OpenJDK 21.0.12` (`/usr/bin/java`) -> **Listo**.
 * **Android Debug Bridge (ADB)**: `v1.0.41 (34.0.4)` (`/usr/lib/android-sdk/platform-tools/adb`) -> **Listo**.
 * **Backend Receptor (`inventory-node`)**: Endpoint `POST /api/telemetry/heartbeat` con autenticación `X-Device-Api-Key` -> **Operativo y Verificado**.
