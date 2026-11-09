@@ -6,7 +6,7 @@
 
 ## 📌 Descripción General
 
-**`inventory-telemetry-agent`** es un demonio móvil corporativo y ultra-ligero desarrollado en **Kotlin** para el sistema operativo Android. Su propósito principal es reportar de forma periódica, autónoma y silenciosa la ubicación satelital/red y el estado operativo de los activos de venta y terminales POS (**Ciontek CS30**, smartphones Android 11+ a Android 17) hacia el backend central de inventario (`cross_Inventory` / `inventory-node`).
+**`inventory-telemetry-agent`** es un demonio móvil corporativo y ultra-ligero desarrollado en **Kotlin** para el sistema operativo Android. Su propósito principal es reportar de forma periódica, autónoma y silenciosa la ubicación satelital/red y el estado operativo de los activos de venta y terminales POS (**Ciontek CS30**, **Topwise T6D**, smartphones Android 11+ a Android 17) hacia el backend central de inventario (`cross_Inventory` / `inventory-node`).
 
 ---
 

@@ -24,16 +24,16 @@ Este proyecto opera de manera desacoplada en su propio directorio para no contam
 
 ## 🛠️ 2. Pila Tecnológica (Tech Stack)
 
-El agente está diseñado como un **demonio corporativo ultra-ligero** para correr tanto en terminales POS de recursos limitados (1–2 GB RAM, Android 11+) como en dispositivos modernos (Android 17):
+El agente está diseñado como un **demonio corporativo ultra-ligero** para correr tanto en terminales POS de recursos limitados (1–2 GB RAM, Android 11+ como **Ciontek CS30** y **Topwise T6D**) como en dispositivos modernos (Android 17):
 
 | Capa / Componente | Tecnología Seleccionada | Justificación Técnica |
 | :--- | :--- | :--- |
 | **Lenguaje Principal** | **Kotlin 2.x** | Nulabilidad segura, corrutinas ligeras y soporte oficial de primera clase en Android. |
-| **SDK Mínimo (`minSdk`)** | **API 29 (Android 10) / API 30 (Android 11)** | Cubre el 100% de las terminales POS **Ciontek CS30** y handhelds corporativos. |
+| **SDK Mínimo (`minSdk`)** | **API 29 (Android 10) / API 30 (Android 11)** | Cubre el 100% de terminales POS (**Ciontek CS30**, **Topwise T6D**) y handhelds corporativos. |
 | **SDK Objetivo (`targetSdk`)** | **API 35 / 36 (Android 15–17)** | Permite instalación limpia y cumplimiento de políticas de seguridad en celulares con **Android 17**. |
 | **Motor de Tareas en Fondo** | **Android Jetpack `WorkManager`** | Garantiza ejecución diferida resiliente, respeta `Doze Mode`, espera conexión de red (`NetworkType.CONNECTED`) y sobrevive a reinicios. |
 | **Arranque Automático** | **`BroadcastReceiver` (`LOCKED_BOOT_COMPLETED` / `BOOT_COMPLETED`)** | Despierta al agente apenas el dispositivo termina de encender, sin intervención humana. |
-| **Proveedor de Ubicación** | **Ubicación Híbrida (`LocationManager` + `FusedLocation`)** | Combina satélite GPS con triangulación Wi-Fi/Celdas para funcionar incluso bajo techo en taquillas. |
+| **Proveedor de Ubicación** | **Ubicación Híbrida (`LocationManager` + `FusedLocation`)** | Combina satélite GPS con triangulación Wi-Fi/Celdas. Totalmente compatible con AOSP puro (sin Google Play Services) para terminales Topwise y Ciontek. |
 | **Almacenamiento Seguro** | **`EncryptedSharedPreferences` (Android Keystore)** | Cifra la placa del activo, el PIN de TI y el `X-Device-Api-Key` en el hardware del dispositivo. |
 | **Cliente HTTP** | **`HttpURLConnection` nativo / `OkHttp` ligero** | Cero sobrecarga de librerías pesadas; envía el JSON de ~250 bytes en milisegundos. |
 | **Interfaz de Usuario (UI)** | **Android Views / Material Components ligeros** | Pantalla rápida de diagnóstico (Solo Lectura para el operario) y modal protegido por PIN para TI. |

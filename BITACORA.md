@@ -19,7 +19,7 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 * **Notificaciones (Correo + WhatsApp Wasapi)**: Plantilla Meta `alerta_desviacion_inventario` (`2bf3b48b-b426-4a2e-9442-3b38a35f606a`) con banner `monitoreo.jpeg` y botón Google Maps -> **Operativo y Verificado**.
 * **Dispositivos Objetivo**:
   * 📱 **Dispositivo de Pruebas Inicial**: Smartphone del usuario con **Android 17**.
-  * 📟 **Dispositivos de Producción**: Terminales POS (Ciontek CS30) y equipos corporativos con **Android 11+ (API 30+)**.
+  * 📟 **Dispositivos de Producción**: Terminales POS (**Ciontek CS30**, **Topwise T6D**) y equipos corporativos con **Android 11+ (API 30+)**.
 
 ---
 
