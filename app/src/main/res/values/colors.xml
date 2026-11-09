@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta Corporativa Flota La Macarena -->
+    <color name="macarena_green_dark">#0B5D34</color>
+    <color name="macarena_green_primary">#148A43</color>
+    <color name="macarena_green_light">#E8F5E9</color>
+    <color name="macarena_accent">#F28C28</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="background_light">#F8F9FA</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="status_ok">#2E7D32</color>
+    <color name="status_warning">#E65100</color>
+    <color name="status_error">#C62828</color>
+</resources>

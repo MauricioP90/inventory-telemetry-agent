@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Telemetría Flota La Macarena</string>
+    <string name="title_status">Estado del Agente de Telemetría</string>
+    <string name="label_placa">Placa / Serial del Activo:</string>
+    <string name="label_server_url">Servidor Receptor:</string>
+    <string name="label_last_heartbeat">Último Latido:</string>
+    <string name="label_location">Coordenadas Actuales:</string>
+    <string name="btn_sync_now">Sincronizar Ahora</string>
+    <string name="btn_admin_config">Configuración TI</string>
+    <string name="pin_prompt">Ingrese el PIN Administrativo de TI</string>
+    <string name="pin_invalid">PIN incorrecto. Acceso denegado.</string>
+    <string name="config_saved">Configuración guardada exitosamente.</string>
+    <string name="syncing">Enviando latido de telemetría...</string>
+    <string name="sync_success">Latido recibido exitosamente por el servidor.</string>
+    <string name="sync_error">Error de comunicación o fuera de cobertura.</string>
+</resources>
