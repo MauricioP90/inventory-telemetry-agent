@@ -40,7 +40,43 @@ Se generan dos variantes del instalador:
 
 ---
 
-## ⚙️ 3. Protocolo de Enrolamiento y Configuración Inicial
+## 🖥️ 3. Visualización y Control en Monitor con `scrcpy` (Iteración Rápida de UI)
+
+Para facilitar el desarrollo, los ajustes visuales de la interfaz y la realización de pruebas de QA sin necesidad de manipular físicamente el teléfono, se utiliza **`scrcpy`** (Screen Copy).
+
+### ¿Cómo funciona?
+* `scrcpy` se ejecuta **exclusivamente en tu computador**; en el teléfono **no se instala ninguna aplicación**.
+* Abre una ventana en tu monitor que proyecta la pantalla de tu celular en tiempo real (60 FPS, baja latencia) y te permite operar la aplicación usando el ratón y el teclado de tu equipo.
+
+### Paso 1: Instalación de `scrcpy` en Linux (Ubuntu)
+Abre tu terminal en el computador y ejecuta:
+```bash
+sudo apt update && sudo apt install -y scrcpy
+```
+*(O vía snap si tu distribución lo prefiere: `sudo snap install scrcpy`)*.
+
+### Paso 2: Conectar el teléfono y proyectar pantalla
+1. Conecta el celular por cable USB con **Depuración por USB** activada.
+2. Habilita el túnel inverso para que el celular alcance el backend local:
+   ```bash
+   adb reverse tcp:3000 tcp:3000
+   ```
+3. Lanza la proyección en tu monitor:
+   ```bash
+   scrcpy
+   ```
+   *(Opciones útiles: `scrcpy --always-on-top` para mantener la ventana visible mientras editas código, o `scrcpy -m 1024` para optimizar ancho de banda).*
+
+### Paso 3: Ciclo de Ajuste Visual en Vivo (3 a 5 segundos)
+Cuando se realicen cambios visuales en [`activity_main.xml`](file:///home/tecnologia17/desarrollo/inventory-telemetry-agent/app/src/main/res/layout/activity_main.xml), colores o tipografías:
+```bash
+./gradlew installDebug
+```
+Al ser una compilación incremental de recursos, la app se actualiza en el dispositivo en pocos segundos y verás el nuevo diseño reflejado directamente en la ventana de tu pantalla.
+
+---
+
+## ⚙️ 4. Protocolo de Enrolamiento y Configuración Inicial
 
 Al abrir la aplicación por primera vez, el agente se encuentra en **Modo Solo Lectura**:
 
@@ -75,7 +111,7 @@ Al abrir la aplicación por primera vez, el agente se encuentra en **Modo Solo L
 
 ---
 
-## 🧪 4. Matriz de Casos de Prueba para QA
+## 🧪 5. Matriz de Casos de Prueba para QA
 
 | ID Caso | Escenario de Prueba | Procedimiento | Resultado Esperado | Criterio de Éxito |
 | :---: | :--- | :--- | :--- | :---: |
@@ -90,7 +126,7 @@ Al abrir la aplicación por primera vez, el agente se encuentra en **Modo Solo L
 
 ---
 
-## 🛠️ 5. Comandos Útiles de Diagnóstico y Auditoría
+## 🛠️ 6. Comandos Útiles de Diagnóstico y Auditoría
 
 Si durante las pruebas requieres monitorear en tiempo real la actividad interna del agente:
 
@@ -111,7 +147,7 @@ adb shell "run-as com.flotalamacarena.telemetry ls -la shared_prefs/"
 
 ---
 
-## 👥 6. Responsables y Contacto Técnico
+## 👥 7. Responsables y Contacto Técnico
 * **Área Responsable**: Tecnología y Sistemas de Información — Flota La Macarena S.A.
 * **Documentación de Arquitectura**: [`PLAN_ARQUITECTURA.md`](file:///home/tecnologia17/desarrollo/inventory-telemetry-agent/PLAN_ARQUITECTURA.md)
 * **Bitácora de Hitos**: [`BITACORA.md`](file:///home/tecnologia17/desarrollo/inventory-telemetry-agent/BITACORA.md)

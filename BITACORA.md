@@ -17,6 +17,7 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 * **Android SDK Local**: `/home/tecnologia17/Android/Sdk` (`platforms;android-35`, `build-tools;35.0.0`, `build-tools;34.0.0`, `platform-tools`) -> **Instalado y Verificado**.
 * **Instalador Compilado (`.apk`)**: `app/build/outputs/apk/debug/app-debug.apk` -> **Generado con Éxito**.
 * **Android Debug Bridge (ADB)**: `v1.0.41 (34.0.4)` (`/usr/lib/android-sdk/platform-tools/adb`) -> **Listo**.
+* **Visualización en Monitor (Scrcpy)**: Proyección de pantalla y control por mouse de baja latencia sin apps extra en el celular -> **Disponible para instalación (`sudo apt install scrcpy`)**.
 * **Backend Receptor (`inventory-node`)**: Endpoint `POST /api/telemetry/heartbeat` con autenticación `X-Device-Api-Key` -> **Operativo y Verificado**.
 * **Notificaciones (Correo + WhatsApp Wasapi)**: Plantilla Meta `alerta_desviacion_inventario` (`2bf3b48b-b426-4a2e-9442-3b38a35f606a`) con banner `monitoreo.jpeg` y botón Google Maps -> **Operativo y Verificado**.
 * **Dispositivos Objetivo**:
@@ -52,16 +53,23 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 * **Contexto**: El operario de una POS o custodio de un equipo no debe poder cambiar el número de placa del activo ni desactivar los reportes.
 * **Decisión**: La interfaz principal abre siempre en **Modo Solo Lectura** (mostrando Placa, Estado y botón manual *"Sincronizar Ahora"*). Cualquier cambio de Placa, Servidor o API Key exige ingresar el PIN de TI.
 
+### ADR-004: Emulación e Inspección Visual en Tiempo Real vía `scrcpy` en Dispositivo Físico (10/Nov/2026)
+* **Contexto**: En máquinas corporativas con restricciones de virtualización por hardware (`/dev/kvm`), ejecutar un emulador de Android Studio consume de 4 a 6 GB de RAM y puede ralentizar el equipo. Además, se requiere un flujo rápido de iteración visual para ajustar la interfaz corporativa.
+* **Decisión**: Adoptar **`scrcpy`** conectado por cable USB al celular de prueba. Permite proyectar la pantalla del dispositivo a 60 FPS en el monitor de Linux con control total por mouse/teclado, sin instalar aplicaciones adicionales en el teléfono móvil y permitiendo ciclos de compilación incremental de 3 a 5 segundos (`./gradlew installDebug`).
+
 ---
 
-## 🧪 4. Guía Rápida para Pruebas con el Celular (Fase 5)
+## 🧪 4. Guía Rápida para Pruebas y Ajustes Visuales con el Celular (Fase 5)
 
-Cuando lleguemos a la Fase 5, podremos probar de dos maneras desde tu celular con **Android 17**:
+Podemos probar y ajustar la interfaz desde tu celular con **Android 17**:
 
-1. **Vía Cable USB con `adb` (Más rápido)**:
-   * Activar *Depuración por USB* en el celular.
-   * Ejecutar `adb devices` y `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
-   * Incluso podemos usar `adb reverse tcp:3000 tcp:3000` para que tu celular acceda a `http://localhost:3000` directamente por el cable USB sin importar en qué red Wi-Fi esté.
+1. **Vía Cable USB con `scrcpy` y `adb` (Flujo Recomendado de Alta Velocidad)**:
+   * Activar *Depuración por USB* en el celular y conectar por cable.
+   * Instalar `scrcpy` en la máquina: `sudo apt update && sudo apt install -y scrcpy`.
+   * Habilitar el túnel inverso al backend local: `adb reverse tcp:3000 tcp:3000`.
+   * Proyectar la pantalla en vivo: `scrcpy`.
+   * Instalar el APK compilado: `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
+   * Cada ajuste visual en XML o Kotlin se refleja en ~4 segundos con `./gradlew installDebug`.
 2. **Vía Wi-Fi / Descarga Directa del `.apk`**:
    * Copiar el `.apk` al celular, instalarlo y apuntar la URL del servidor a la IP local del computador (`http://192.168.x.x:3000`).
 
