@@ -76,38 +76,54 @@ Al ser una compilación incremental de recursos, la app se actualiza en el dispo
 
 ---
 
-## ⚙️ 4. Protocolo de Enrolamiento y Configuración Inicial
+## ⚙️ 4. Protocolo de Enrolamiento y Panel Técnico Oculto (`Servicios FLM`)
 
-Al abrir la aplicación por primera vez, el agente se encuentra en **Modo Solo Lectura**:
+Para evitar sospechas o sabotaje en las taquillas, la aplicación se muestra como **Servicios FLM** con una pantalla de inicio de sesión corporativa estándar:
 
 ```text
 ┌───────────────────────────────────────────────┐
-│       TELEMETRÍA FLOTA LA MACARENA            │
-│       Estado: No Enrolado / Desconectado      │
+│              [ LOGO BUS MACARENA ]            │
+│               FLOTA LA MACARENA               │
+│          Servicios Operativos y Soporte       │
 │                                               │
-│  Placa: [ NO REGISTRADA ]                     │
-│  Servidor: http://10.0.2.2:3000               │
-│  Último Latido: Nunca                         │
+│  👤 [ Usuario                               ] │
+│  🔒 [ Contraseña                            ] │
 │                                               │
-│  [ SINCRONIZAR AHORA ]  [ CONFIGURACIÓN TI ]  │
+│           ¿Olvidó su contraseña?              │
+│                                               │
+│               [ ➔ INGRESAR ]                  │
+│                                               │
+│          v1.0.0 - Flota La Macarena S.A.      │
 └───────────────────────────────────────────────┘
 ```
 
-### Paso a Paso para Enrolar el Dispositivo:
-1. Toca el botón **Configuración TI**.
-2. Aparecerá un teclado numérico de seguridad: ingresa el **PIN Administrativo de TI**:
-   > 🔐 **PIN Oficial de TI**: `2026`
-3. Al ingresar el PIN correcto, se desbloquea el formulario de enrolamiento. Diligencia los siguientes campos:
-   * **Placa / Serial del Activo**: Identificador único del equipo (ej: `POS-BOG-01`, `POS-VILLAVO-02`, `CEL-SUPERVISOR-01`).
-   * **URL del Servidor Receptor**: 
-     * Para pruebas locales: `http://192.168.1.100:3000` (IP de tu máquina).
-     * Para producción: `https://inventario.flotalamacarena.com`
-   * **API Key de Telemetría**: Cabecera `X-Device-Api-Key` configurada en el servidor.
-   * **Intervalo de Latido**: Por defecto `15` minutos (mínimo `5`, máximo `120`).
-4. Presiona **Guardar y Enrolar**.
-5. **Permisos Críticos del Sistema Operativo** (Aparecerán automáticamente):
+### Paso a Paso para Desbloquear el Panel Técnico (Solo TI / QA):
+1. **Acceso Rápido por Contraseña Maestra**:
+   * En el campo **Contraseña**, ingresa la credencial maestra de TI:
+     > 🔐 **Credencial Maestra de TI**: `FLM#Admin2026`
+   * Presiona el botón **INGRESAR**.
+2. **Acceso Alternativo por Gesto Discreto**:
+   * Toca **5 veces consecutivas** (o mantén presionado) sobre la ilustración del **microbús corporativo**.
+   * Se abrirá un diálogo solicitando la contraseña técnica de TI (`FLM#Admin2026`).
+3. **Mecanismo Anti-Fuerza Bruta**:
+   * Si un usuario u operario intenta adivinar la clave, cada intento fallido mostrará: *"Acceso restringido: Contacte al Administrador de TI."*
+   * Al **3er intento consecutivo fallido**, la app activa un **bloqueo estricto por 5 minutos (300 segundos)**, rechazando cualquier intento adicional.
+4. **Panel Técnico de Diagnóstico y Enrolamiento**:
+   Al autenticarse exitosamente, se abre la ventana técnica que incluye:
+   * **Tarjeta de Telemetría en Vivo**: Muestra la Placa, Estado del Agente, Último Latido y Coordenadas GPS reales detectadas.
+   * **Botón "Sincronizar Latido Ahora"**: Envía un reporte manual inmediato al backend.
+   * **Parámetros de Enrolamiento**:
+     * **Placa / Serial del Activo**: Identificador único del equipo (ej: `1528-007885`, `POS-BOG-01`).
+     * **URL del Servidor Receptor**: 
+       * Pruebas locales con cable USB / `adb reverse`: `http://localhost:3000`
+       * Pruebas Wi-Fi local: `http://192.168.1.X:3000`
+       * Producción: `https://inventario.flotalamacarena.com`
+     * **API Key de Telemetría**: Cabecera `X-Device-Api-Key` (`flm-telemetry-secret-key-2026`).
+     * **Intervalo de Latido**: En minutos (por defecto `15`).
+5. Presiona **Guardar Configuración**.
+6. **Permisos Críticos del Sistema Operativo**:
    * **Ubicación**: Selecciona **"Permitir todo el tiempo"** (*Allow all the time*).
-   * **Optimización de Batería**: Selecciona **"Permitir"** en la exención de ahorro de batería para evitar que el sistema duerma el agente.
+   * **Optimización de Batería**: Selecciona **"Permitir"** en la exención de ahorro de batería.
 
 ---
 
@@ -115,7 +131,7 @@ Al abrir la aplicación por primera vez, el agente se encuentra en **Modo Solo L
 
 | ID Caso | Escenario de Prueba | Procedimiento | Resultado Esperado | Criterio de Éxito |
 | :---: | :--- | :--- | :--- | :---: |
-| **CP-01** | **Seguridad por PIN** | Intentar ingresar al panel administrativo con PIN erróneo (`1234`, `0000`, vacío). Luego ingresar con `2026`. | Deniega el acceso en intentos fallidos. Con `2026` abre el modal de edición. | ✅ Bloqueo efectivo contra operarios de taquilla. |
+| **CP-01** | **Seguridad Criptográfica y Rate Limiting** | Ingresar contraseñas erróneas (`1234`, `admin`, `2026`). Probar 3 veces consecutivas. Luego ingresar `FLM#Admin2026`. | Intentos 1 y 2 muestran *"Acceso restringido: Contacte al Administrador de TI."*. Al 3er intento bloquea por 300s. Con `FLM#Admin2026` abre el panel técnico. | ✅ Protección total contra fuerza bruta e intrusos. |
 | **CP-02** | **Sincronización Manual** | Presionar el botón *"Sincronizar Ahora"*. | El indicador cambia a *"Enviando latido..."* y en 1-2 segundos confirma *"Latido recibido exitosamente (200 OK)"*. | ✅ Las coordenadas se reflejan en el backend. |
 | **CP-03** | **Reporte Silencioso en Fondo** | Bloquear la pantalla del dispositivo durante 15 minutos sin abrir la app. | El demonio `WorkManager` emite el latido periódicamente sin encender la pantalla ni interrumpir al operario. | ✅ Latido visible en la base de datos de telemetría. |
 | **CP-04** | **Arranque en Frío tras Reinicio** | Apagar completamente el equipo y volver a encenderlo. | El `BootReceiver` intercepta `BOOT_COMPLETED` y programa las tareas de fondo de inmediato. | ✅ No se requiere abrir la aplicación tras encender la terminal. |
