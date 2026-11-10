@@ -145,20 +145,25 @@ class MainActivity : AppCompatActivity() {
 
         setLoading(true)
 
-        // Validación de credencial de TI: Si el PIN ingresado es el código maestro de TI ("2026")
-        if (validatePinUseCase.execute(password)) {
+        lifecycleScope.launch {
+            // Simulación sutil de latencia de autenticación corporativa
+            kotlinx.coroutines.delay(400)
             setLoading(false)
-            binding.etPassword.setText("")
-            binding.etUsername.setText("")
-            showAdminConfigDialog()
-        } else {
-            // Usuario no autorizado / operario de taquilla: Falla silenciosa y mensaje estándar
-            lifecycleScope.launch {
-                // Simulación de latencia de autenticación corporativa
-                kotlinx.coroutines.delay(600)
-                setLoading(false)
-                binding.etPassword.setText("")
-                showAccessRestrictedNotice()
+
+            when (val auth = validatePinUseCase.execute(password)) {
+                is ValidateAdminPinUseCase.AuthResult.Success -> {
+                    binding.etPassword.setText("")
+                    binding.etUsername.setText("")
+                    showAdminConfigDialog()
+                }
+                is ValidateAdminPinUseCase.AuthResult.LockedOut -> {
+                    binding.etPassword.setText("")
+                    showSnackbar("🔒 Terminal bloqueada temporalmente. Espere ${auth.remainingSeconds}s.", isError = true)
+                }
+                is ValidateAdminPinUseCase.AuthResult.InvalidCredentials -> {
+                    binding.etPassword.setText("")
+                    showAccessRestrictedNotice()
+                }
             }
         }
     }
@@ -169,8 +174,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPinAuthDialog() {
         val input = android.widget.EditText(this).apply {
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
-            hint = "PIN Administrativo"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            hint = "Contraseña de TI"
             setPadding(40, 30, 40, 30)
         }
 
@@ -180,10 +185,16 @@ class MainActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton("Ingresar") { _, _ ->
                 val entered = input.text.toString().trim()
-                if (validatePinUseCase.execute(entered)) {
-                    showAdminConfigDialog()
-                } else {
-                    showSnackbar(getString(R.string.pin_invalid), isError = true)
+                when (val auth = validatePinUseCase.execute(entered)) {
+                    is ValidateAdminPinUseCase.AuthResult.Success -> {
+                        showAdminConfigDialog()
+                    }
+                    is ValidateAdminPinUseCase.AuthResult.LockedOut -> {
+                        showSnackbar("🔒 Bloqueado por seguridad. Espere ${auth.remainingSeconds}s.", isError = true)
+                    }
+                    is ValidateAdminPinUseCase.AuthResult.InvalidCredentials -> {
+                        showSnackbar(getString(R.string.access_restricted), isError = true)
+                    }
                 }
             }
             .setNegativeButton("Cancelar", null)
