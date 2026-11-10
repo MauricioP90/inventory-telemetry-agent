@@ -1,16 +1,26 @@
 <resources>
-    <string name="app_name">Telemetría Flota La Macarena</string>
-    <string name="title_status">Estado del Agente de Telemetría</string>
+    <string name="app_name">Servicios FLM</string>
+    <string name="title_portal_main">FLOTA LA MACARENA</string>
+    <string name="title_portal_sub">Servicios Operativos y Soporte</string>
+    <string name="label_username">Usuario</string>
+    <string name="label_password">Contraseña</string>
+    <string name="btn_login">INGRESAR</string>
+    <string name="forgot_password">¿Olvidó su contraseña?</string>
+    <string name="access_restricted">Acceso restringido: Contacte al Administrador de TI.</string>
+    <string name="footer_copyright">v1.0.0 — Flota La Macarena S.A.</string>
+    
+    <!-- Textos para panel técnico interno -->
+    <string name="title_admin_config">Configuración de Servicios TI</string>
     <string name="label_placa">Placa / Serial del Activo:</string>
     <string name="label_server_url">Servidor Receptor:</string>
     <string name="label_last_heartbeat">Último Latido:</string>
     <string name="label_location">Coordenadas Actuales:</string>
     <string name="btn_sync_now">Sincronizar Ahora</string>
     <string name="btn_admin_config">Configuración TI</string>
-    <string name="pin_prompt">Ingrese el PIN Administrativo de TI</string>
-    <string name="pin_invalid">PIN incorrecto. Acceso denegado.</string>
+    <string name="pin_prompt">Ingrese credencial administrativa</string>
+    <string name="pin_invalid">Credencial incorrecta. Acceso denegado.</string>
     <string name="config_saved">Configuración guardada exitosamente.</string>
-    <string name="syncing">Enviando latido de telemetría...</string>
-    <string name="sync_success">Latido recibido exitosamente por el servidor.</string>
+    <string name="syncing">Verificando conexión con el servidor...</string>
+    <string name="sync_success">Servicio sincronizado correctamente con el servidor.</string>
     <string name="sync_error">Error de comunicación o fuera de cobertura.</string>
 </resources>

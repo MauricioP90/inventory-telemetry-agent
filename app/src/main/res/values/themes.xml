@@ -1,16 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.InventoryTelemetryAgent" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/macarena_green_primary</item>
-        <item name="colorPrimaryVariant">@color/macarena_green_dark</item>
+        <!-- Primary brand color (Orange FLM) -->
+        <item name="colorPrimary">@color/macarena_orange_primary</item>
+        <item name="colorPrimaryVariant">@color/dark_bg</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/macarena_accent</item>
-        <item name="colorSecondaryVariant">@color/macarena_accent</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <item name="android:windowBackground">@color/background_light</item>
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/macarena_orange_primary</item>
+        <item name="colorSecondaryVariant">@color/macarena_orange_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/dark_bg</item>
+        <item name="android:windowBackground">@color/dark_bg</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
     </style>
 </resources>

@@ -4,14 +4,29 @@
     <color name="macarena_green_dark">#0B5D34</color>
     <color name="macarena_green_primary">#148A43</color>
     <color name="macarena_green_light">#E8F5E9</color>
+    <color name="macarena_orange_primary">#F15A24</color>
+    <color name="macarena_orange_dark">#D44310</color>
     <color name="macarena_accent">#F28C28</color>
+    
+    <!-- Tema Oscuro Disfrazado (Camuflaje Corporativo) -->
+    <color name="dark_bg">#181B1F</color>
+    <color name="dark_surface">#22262C</color>
+    <color name="dark_input_bg">#1E2227</color>
+    <color name="dark_input_stroke">#3D444E</color>
+    <color name="dark_input_stroke_focused">#F15A24</color>
+    
+    <!-- Colores Base -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
+    <color name="text_primary_dark">#F1F3F5</color>
+    <color name="text_secondary_dark">#9AA0A6</color>
+    <color name="text_hint_dark">#6E7681</color>
     <color name="background_light">#F8F9FA</color>
-    <color name="card_background">#FFFFFF</color>
+    
+    <!-- Estados -->
     <color name="status_ok">#2E7D32</color>
     <color name="status_warning">#E65100</color>
-    <color name="status_error">#C62828</color>
+    <color name="status_error">#E53935</color>
 </resources>

@@ -36,6 +36,7 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 | **Fase 3** | **Proveedor de Ubicación Híbrido, Cliente HTTP y Guía QA**: Ubicación híbrida (Google Fused + LocationManager nativo AOSP), Anti-Mock GPS, `HttpTelemetryGateway` y [`GUIA_QA_PRUEBAS.md`](file:///home/tecnologia17/desarrollo/inventory-telemetry-agent/GUIA_QA_PRUEBAS.md). | `HybridLocationProvider.kt`, `HttpTelemetryGateway.kt`, `GUIA_QA_PRUEBAS.md` | ✅ **Completado** | ✅ Sí (09/Nov/2026) |
 | **Fase 4** | **Demonio de Arranque y Ciclo Periódico**: `BootReceiver` (`BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`) y `TelemetryWorker` (`WorkManager` con `NetworkType.CONNECTED` y backoff exponencial). | `BootReceiver.kt`, `TelemetryWorker.kt`, `TelemetryWorkScheduler.kt` | ✅ **Completado** | ✅ Sí (09/Nov/2026) |
 | **Fase 5** | **Interfaz UI, Compilación `.apk` y Prueba en Vivo**: Pantalla de estado con ViewBinding, modal de enrolamiento con PIN `2026`, gestión de permisos escalonados y compilación de `app-debug.apk`. | `MainActivity.kt`, `activity_main.xml`, `app-debug.apk` | ✅ **Completado** | ✅ Sí (10/Nov/2026) |
+| **Fase 5.2** | **Camuflaje Anti-Tampering & UI Corporativa `Servicios FLM`**: Rediseño estilo portal corporativo oscuro con microbús de Flota La Macarena, bloqueo total a operarios de taquilla y acceso protegido para TI. | `MainActivity.kt`, `activity_main.xml`, `dialog_admin_config.xml`, `colors.xml`, `strings.xml` | ✅ **Completado** | ✅ Sí (10/Nov/2026) |
 
 ---
 
@@ -56,6 +57,10 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 ### ADR-004: Emulación e Inspección Visual en Tiempo Real vía `scrcpy` en Dispositivo Físico (10/Nov/2026)
 * **Contexto**: En máquinas corporativas con restricciones de virtualización por hardware (`/dev/kvm`), ejecutar un emulador de Android Studio consume de 4 a 6 GB de RAM y puede ralentizar el equipo. Además, se requiere un flujo rápido de iteración visual para ajustar la interfaz corporativa.
 * **Decisión**: Adoptar **`scrcpy`** conectado por cable USB al celular de prueba. Permite proyectar la pantalla del dispositivo a 60 FPS en el monitor de Linux con control total por mouse/teclado, sin instalar aplicaciones adicionales en el teléfono móvil y permitiendo ciclos de compilación incremental de 3 a 5 segundos (`./gradlew installDebug`).
+
+### ADR-005: Camuflaje de Interfaz y Ocultamiento de Telemetría (Security by Camouflage) (10/Nov/2026)
+* **Contexto**: Mostrar que la aplicación es de "Telemetría", "GPS" o "Geocercas" en el menú o pantalla principal alerta a cualquier operario o custodio no autorizado, facilitando intentos de evasión, desactivación de ubicación o sabotaje del servicio.
+* **Decisión**: Reemplazar la identidad visible de la aplicación por **`Servicios FLM`** con un diseño de login corporativo oscuro y la ilustración oficial del microbús de Flota La Macarena. Cualquier intento de inicio de sesión no autorizado emite un mensaje neutral: *"Acceso restringido: Contacte al Administrador de TI."* El panel técnico de telemetría y enrolamiento queda completamente oculto y solo se desbloquea con el PIN de TI (`2026`) o un gesto administrativo discreto.
 
 ---
 
