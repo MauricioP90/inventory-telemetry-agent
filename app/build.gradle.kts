@@ -46,6 +46,16 @@ android {
     }
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
 dependencies {
     // AndroidX Core y AppCompat
     implementation("androidx.core:core-ktx:1.13.1")

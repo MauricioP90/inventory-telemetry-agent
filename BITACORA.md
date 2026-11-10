@@ -13,7 +13,9 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 
 * **Directorio del Proyecto**: `/home/tecnologia17/desarrollo/inventory-telemetry-agent`
 * **Repositorio Remoto (GitHub)**: `https://github.com/MauricioP90/inventory-telemetry-agent.git` (Rama: `main`) -> **Activo y Sincronizado**.
-* **Java Runtime en Máquina Host**: `OpenJDK 21.0.12` (`/usr/bin/java`) -> **Listo**.
+* **Java Runtime & Toolchain**: `OpenJDK 21.0.12` (`/usr/bin/java`) + Toolchain `JDK 17` (`~/.gradle/jdks`) -> **Listo**.
+* **Android SDK Local**: `/home/tecnologia17/Android/Sdk` (`platforms;android-35`, `build-tools;35.0.0`, `build-tools;34.0.0`, `platform-tools`) -> **Instalado y Verificado**.
+* **Instalador Compilado (`.apk`)**: `app/build/outputs/apk/debug/app-debug.apk` -> **Generado con Éxito**.
 * **Android Debug Bridge (ADB)**: `v1.0.41 (34.0.4)` (`/usr/lib/android-sdk/platform-tools/adb`) -> **Listo**.
 * **Backend Receptor (`inventory-node`)**: Endpoint `POST /api/telemetry/heartbeat` con autenticación `X-Device-Api-Key` -> **Operativo y Verificado**.
 * **Notificaciones (Correo + WhatsApp Wasapi)**: Plantilla Meta `alerta_desviacion_inventario` (`2bf3b48b-b426-4a2e-9442-3b38a35f606a`) con banner `monitoreo.jpeg` y botón Google Maps -> **Operativo y Verificado**.
@@ -32,7 +34,7 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 | **Fase 2** | **Capa de Dominio, Aplicación y Persistencia con PIN**: Entidades puras, puertos, casos de uso (`ValidateAdminPinUseCase` con PIN `2026`, `SendHeartbeatUseCase`) y persistencia cifrada (`SecureConfigRepository`). | `domain/*`, `application/*`, `SecureConfigRepository.kt` | ✅ **Completado** | ✅ Sí (09/Nov/2026) |
 | **Fase 3** | **Proveedor de Ubicación Híbrido, Cliente HTTP y Guía QA**: Ubicación híbrida (Google Fused + LocationManager nativo AOSP), Anti-Mock GPS, `HttpTelemetryGateway` y [`GUIA_QA_PRUEBAS.md`](file:///home/tecnologia17/desarrollo/inventory-telemetry-agent/GUIA_QA_PRUEBAS.md). | `HybridLocationProvider.kt`, `HttpTelemetryGateway.kt`, `GUIA_QA_PRUEBAS.md` | ✅ **Completado** | ✅ Sí (09/Nov/2026) |
 | **Fase 4** | **Demonio de Arranque y Ciclo Periódico**: `BootReceiver` (`BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`) y `TelemetryWorker` (`WorkManager` con `NetworkType.CONNECTED` y backoff exponencial). | `BootReceiver.kt`, `TelemetryWorker.kt`, `TelemetryWorkScheduler.kt` | ✅ **Completado** | ✅ Sí (09/Nov/2026) |
-| **Fase 5** | **Interfaz UI, Compilación `.apk` y Prueba en Vivo**: Pantalla de estado con ViewBinding, modal de enrolamiento con PIN `2026`, gestión de permisos escalonados y compilador Gradle listo. | `MainActivity.kt`, `activity_main.xml`, `dialog_admin_config.xml` | ✅ **Completado (Local)** | — |
+| **Fase 5** | **Interfaz UI, Compilación `.apk` y Prueba en Vivo**: Pantalla de estado con ViewBinding, modal de enrolamiento con PIN `2026`, gestión de permisos escalonados y compilación de `app-debug.apk`. | `MainActivity.kt`, `activity_main.xml`, `app-debug.apk` | ✅ **Completado** | ✅ Sí (10/Nov/2026) |
 
 ---
 

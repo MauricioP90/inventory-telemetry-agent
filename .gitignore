@@ -34,8 +34,9 @@ proguard/
 # Log Files
 *.log
 
-# Android Studio / IntelliJ IDEA
+# Android Studio / IntelliJ IDEA / VS Code
 .idea/
+.vscode/
 *.iml
 .navigation/
 captures/
