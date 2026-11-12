@@ -39,6 +39,7 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 | **Fase 5** | **Interfaz UI, Compilación `.apk` y Prueba en Vivo**: Pantalla de estado con ViewBinding, modal de enrolamiento con PIN `2026`, gestión de permisos escalonados y compilación de `app-debug.apk`. | `MainActivity.kt`, `activity_main.xml`, `app-debug.apk` | ✅ **Completado** | ✅ Sí (10/Nov/2026) |
 | **Fase 5.2** | **Camuflaje Anti-Tampering & UI Corporativa `Servicios FLM`**: Rediseño estilo portal corporativo oscuro con microbús de Flota La Macarena, bloqueo total a operarios de taquilla y acceso protegido para TI. | `MainActivity.kt`, `activity_main.xml`, `dialog_admin_config.xml`, `colors.xml`, `strings.xml` | ✅ **Completado** | ✅ Sí (10/Nov/2026) |
 | **Fase 5.3** | **Blindaje Criptográfico & Anti-Fuerza Bruta**: Hashing SHA-256 + Salt (`FLM#Admin2026`), rate limiting de 3 intentos / bloqueo de 300s, mensaje disuasorio neutral y suite de pruebas unitarias al 100%. | `ValidateAdminPinUseCase.kt`, `ValidateAdminPinUseCaseTest.kt`, `MainActivity.kt` | ✅ **Completado** | ✅ Sí (10/Nov/2026) |
+| **Fase 5.4** | **Perfeccionamiento de Camuflaje (Login Realista & Recuperación)**: Eliminación del gesto en microbús (ilustración estática), unificación en Acceso 1 (`FLM#Admin2026`), respuestas de error estándar de login (*"Usuario o contraseña incorrectos"*) y modal creíble de recuperación de credenciales hacia Mesa de Ayuda. | `MainActivity.kt`, `dialog_forgot_password.xml`, `strings.xml`, `ServiciosFLM.apk` | ✅ **Completado** | ✅ Sí (12/Nov/2026) |
 
 ---
 

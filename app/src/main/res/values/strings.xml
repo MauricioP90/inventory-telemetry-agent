@@ -7,6 +7,17 @@
     <string name="btn_login">INGRESAR</string>
     <string name="forgot_password">¿Olvidó su contraseña?</string>
     <string name="access_restricted">Acceso restringido: Contacte al Administrador de TI.</string>
+    <string name="login_error_invalid_credentials">Usuario o contraseña incorrectos. Por favor verifique sus datos.</string>
+    <string name="login_error_locked_out">Demasiados intentos fallidos. Terminal bloqueada por seguridad. Espere %1$d s.</string>
+    
+    <!-- Recuperación de contraseña corporativa -->
+    <string name="title_forgot_password">Recuperación de Credenciales</string>
+    <string name="desc_forgot_password">Para restablecer sus credenciales corporativas, ingrese su usuario o correo institucional (@flotalamacarena.com) y se notificará a la Mesa de Ayuda de TI.</string>
+    <string name="hint_recovery_user">usuario@flotalamacarena.com</string>
+    <string name="btn_send_request">ENVIAR SOLICITUD</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="error_empty_recovery_user">Ingrese su usuario o correo corporativo</string>
+    <string name="recovery_request_sent">Solicitud enviada a la Mesa de Ayuda de TI. Si el usuario existe en el directorio corporativo, recibirá las instrucciones en su correo institucional.</string>
     <string name="footer_copyright">v1.0.0 — Flota La Macarena S.A.</string>
     
     <!-- Textos para panel técnico interno -->

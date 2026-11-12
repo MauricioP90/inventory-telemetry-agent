@@ -25,6 +25,7 @@ import com.flotalamacarena.telemetry.application.usecases.SendHeartbeatUseCase
 import com.flotalamacarena.telemetry.application.usecases.ValidateAdminPinUseCase
 import com.flotalamacarena.telemetry.databinding.ActivityMainBinding
 import com.flotalamacarena.telemetry.databinding.DialogAdminConfigBinding
+import com.flotalamacarena.telemetry.databinding.DialogForgotPasswordBinding
 import com.flotalamacarena.telemetry.domain.models.DeviceConfig
 import com.flotalamacarena.telemetry.domain.models.HeartbeatResult
 import com.flotalamacarena.telemetry.infrastructure.location.HybridLocationProvider
@@ -61,9 +62,6 @@ class MainActivity : AppCompatActivity() {
     private val sendHeartbeatUseCase by lazy {
         SendHeartbeatUseCase(configRepo, locationProvider, telemetryGateway, ipResolver)
     }
-
-    private var busTapCount = 0
-    private var lastBusTapTime = 0L
 
     // Launcher para permisos de ubicación en primer plano
     private val locationPermissionLauncher = registerForActivityResult(
@@ -102,34 +100,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        // Botón Ingresar del formulario de login
+        // Botón Ingresar del formulario de login corporativo (Acceso 1)
         binding.btnLogin.setOnClickListener {
             handleLoginAttempt()
         }
 
-        // Enlace "¿Olvidó su contraseña?"
+        // Enlace "¿Olvidó su contraseña?" abre diálogo creíble de recuperación
         binding.tvForgotPassword.setOnClickListener {
-            showAccessRestrictedNotice()
-        }
-
-        // Acceso directo administrativo secreto (Toque prolongado o 5 toques rápidos en el logo del bus)
-        binding.ivBusLogo.setOnLongClickListener {
-            showPinAuthDialog()
-            true
-        }
-
-        binding.ivBusLogo.setOnClickListener {
-            val now = System.currentTimeMillis()
-            if (now - lastBusTapTime < 800) {
-                busTapCount++
-                if (busTapCount >= 5) {
-                    busTapCount = 0
-                    showPinAuthDialog()
-                }
-            } else {
-                busTapCount = 1
-            }
-            lastBusTapTime = now
+            showForgotPasswordDialog()
         }
     }
 
@@ -137,6 +115,11 @@ class MainActivity : AppCompatActivity() {
         hideKeyboard()
         val username = binding.etUsername.text.toString().trim()
         val password = binding.etPassword.text.toString().trim()
+
+        if (username.isBlank()) {
+            binding.etUsername.error = "Ingrese su usuario institucional"
+            return
+        }
 
         if (password.isBlank()) {
             binding.etPassword.error = "Ingrese su contraseña"
@@ -146,8 +129,8 @@ class MainActivity : AppCompatActivity() {
         setLoading(true)
 
         lifecycleScope.launch {
-            // Simulación sutil de latencia de autenticación corporativa
-            kotlinx.coroutines.delay(400)
+            // Simulación sutil y realista de latencia de autenticación corporativa
+            kotlinx.coroutines.delay(450)
             setLoading(false)
 
             when (val auth = validatePinUseCase.execute(password)) {
@@ -158,47 +141,47 @@ class MainActivity : AppCompatActivity() {
                 }
                 is ValidateAdminPinUseCase.AuthResult.LockedOut -> {
                     binding.etPassword.setText("")
-                    showSnackbar("🔒 Terminal bloqueada temporalmente. Espere ${auth.remainingSeconds}s.", isError = true)
+                    showSnackbar(
+                        getString(R.string.login_error_locked_out, auth.remainingSeconds),
+                        isError = true
+                    )
                 }
                 is ValidateAdminPinUseCase.AuthResult.InvalidCredentials -> {
                     binding.etPassword.setText("")
-                    showAccessRestrictedNotice()
+                    showSnackbar(
+                        getString(R.string.login_error_invalid_credentials),
+                        isError = true
+                    )
                 }
             }
         }
     }
 
-    private fun showAccessRestrictedNotice() {
-        showSnackbar(getString(R.string.access_restricted), isError = true)
-    }
+    private fun showForgotPasswordDialog() {
+        val dialogBinding = DialogForgotPasswordBinding.inflate(LayoutInflater.from(this))
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .create()
 
-    private fun showPinAuthDialog() {
-        val input = android.widget.EditText(this).apply {
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-            hint = "Contraseña de TI"
-            setPadding(40, 30, 40, 30)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        dialogBinding.btnCancelRecovery.setOnClickListener {
+            dialog.dismiss()
         }
 
-        AlertDialog.Builder(this)
-            .setTitle(R.string.title_admin_config)
-            .setMessage(R.string.pin_prompt)
-            .setView(input)
-            .setPositiveButton("Ingresar") { _, _ ->
-                val entered = input.text.toString().trim()
-                when (val auth = validatePinUseCase.execute(entered)) {
-                    is ValidateAdminPinUseCase.AuthResult.Success -> {
-                        showAdminConfigDialog()
-                    }
-                    is ValidateAdminPinUseCase.AuthResult.LockedOut -> {
-                        showSnackbar("🔒 Bloqueado por seguridad. Espere ${auth.remainingSeconds}s.", isError = true)
-                    }
-                    is ValidateAdminPinUseCase.AuthResult.InvalidCredentials -> {
-                        showSnackbar(getString(R.string.access_restricted), isError = true)
-                    }
-                }
+        dialogBinding.btnSubmitRecovery.setOnClickListener {
+            val userOrEmail = dialogBinding.etRecoveryUserOrEmail.text.toString().trim()
+            if (userOrEmail.isBlank()) {
+                dialogBinding.etRecoveryUserOrEmail.error = getString(R.string.error_empty_recovery_user)
+                return@setOnClickListener
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+
+            dialog.dismiss()
+            hideKeyboard()
+            showSnackbar(getString(R.string.recovery_request_sent), isError = false)
+        }
+
+        dialog.show()
     }
 
     private fun showAdminConfigDialog() {
