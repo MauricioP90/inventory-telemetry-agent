@@ -98,16 +98,18 @@ Para evitar sospechas o sabotaje en las taquillas, la aplicación se muestra com
 ```
 
 ### Paso a Paso para Desbloquear el Panel Técnico (Solo TI / QA):
-1. **Acceso Rápido por Contraseña Maestra**:
-   * En el campo **Contraseña**, ingresa la credencial maestra de TI:
-     > 🔐 **Credencial Maestra de TI**: `FLM#Admin2026`
+1. **Acceso Unificado por Formulario Corporativo**:
+   * En el campo **Usuario**, ingresa cualquier identificador institucional (ej. `admin`, `ti` o tu nombre).
+   * En el campo **Contraseña**, ingresa la clave técnica activa:
+     * **Modo Online (Con Red / Servidor)**: Ingresa la contraseña vigente configurada en el portal web de Inventarios (ej: `FLM#Admin2029`).
+     * **Modo Offline (Sin Red / Bodega)**: Si el equipo no tiene internet ni cobertura celular, ingresa la llave maestra de emergencia: `FLM#Admin2026`.
    * Presiona el botón **INGRESAR**.
-2. **Acceso Alternativo por Gesto Discreto**:
-   * Toca **5 veces consecutivas** (o mantén presionado) sobre la ilustración del **microbús corporativo**.
-   * Se abrirá un diálogo solicitando la contraseña técnica de TI (`FLM#Admin2026`).
+2. **Camuflaje Visual y Respuestas Realistas**:
+   * La ilustración del **microbús corporativo es estática** (sin gestos delatores) para asegurar el camuflaje total frente a operarios y pasajeros.
+   * Si un operario ingresa credenciales no autorizadas, la app responde con el mensaje estándar: *"Usuario o contraseña incorrectos. Por favor verifique sus datos."*
+   * El enlace **"¿Olvidó su contraseña?"** despliega un diálogo creíble que orienta al usuario hacia la Mesa de Ayuda de TI de Flota La Macarena, sin revelar detalles de telemetría.
 3. **Mecanismo Anti-Fuerza Bruta**:
-   * Si un usuario u operario intenta adivinar la clave, cada intento fallido mostrará: *"Acceso restringido: Contacte al Administrador de TI."*
-   * Al **3er intento consecutivo fallido**, la app activa un **bloqueo estricto por 5 minutos (300 segundos)**, rechazando cualquier intento adicional.
+   * Al **3er intento consecutivo fallido**, la app activa un **bloqueo estricto por 5 minutos (300 segundos)** con cuenta regresiva en vivo, rechazando cualquier intento adicional.
 4. **Panel Técnico de Diagnóstico y Enrolamiento**:
    Al autenticarse exitosamente, se abre la ventana técnica que incluye:
    * **Tarjeta de Telemetría en Vivo**: Muestra la Placa, Estado del Agente, Último Latido y Coordenadas GPS reales detectadas.
@@ -120,7 +122,7 @@ Para evitar sospechas o sabotaje en las taquillas, la aplicación se muestra com
        * Producción: `https://inventario.flotalamacarena.com`
      * **API Key de Telemetría**: Cabecera `X-Device-Api-Key` (`flm-telemetry-secret-key-2026`).
      * **Intervalo de Latido**: En minutos (por defecto `15`).
-5. Presiona **Guardar Configuración**.
+5. Presiona **Guardar y Enrolar**.
 6. **Permisos Críticos del Sistema Operativo**:
    * **Ubicación**: Selecciona **"Permitir todo el tiempo"** (*Allow all the time*).
    * **Optimización de Batería**: Selecciona **"Permitir"** en la exención de ahorro de batería.
@@ -131,14 +133,17 @@ Para evitar sospechas o sabotaje en las taquillas, la aplicación se muestra com
 
 | ID Caso | Escenario de Prueba | Procedimiento | Resultado Esperado | Criterio de Éxito |
 | :---: | :--- | :--- | :--- | :---: |
-| **CP-01** | **Seguridad Criptográfica y Rate Limiting** | Ingresar contraseñas erróneas (`1234`, `admin`, `2026`). Probar 3 veces consecutivas. Luego ingresar `FLM#Admin2026`. | Intentos 1 y 2 muestran *"Acceso restringido: Contacte al Administrador de TI."*. Al 3er intento bloquea por 300s. Con `FLM#Admin2026` abre el panel técnico. | ✅ Protección total contra fuerza bruta e intrusos. |
+| **CP-01** | **Seguridad Criptográfica y Rate Limiting** | Ingresar contraseñas erróneas (`1234`, `admin`, `clave`). Probar 3 veces consecutivas. Luego ingresar la clave válida. | Intentos 1 y 2 muestran *"Usuario o contraseña incorrectos."*. Al 3er intento bloquea por 300s. Con la clave válida abre el panel técnico. | ✅ Protección total contra fuerza bruta e intrusos. |
 | **CP-02** | **Sincronización Manual** | Presionar el botón *"Sincronizar Ahora"*. | El indicador cambia a *"Enviando latido..."* y en 1-2 segundos confirma *"Latido recibido exitosamente (200 OK)"*. | ✅ Las coordenadas se reflejan en el backend. |
 | **CP-03** | **Reporte Silencioso en Fondo** | Bloquear la pantalla del dispositivo durante 15 minutos sin abrir la app. | El demonio `WorkManager` emite el latido periódicamente sin encender la pantalla ni interrumpir al operario. | ✅ Latido visible en la base de datos de telemetría. |
 | **CP-04** | **Arranque en Frío tras Reinicio** | Apagar completamente el equipo y volver a encenderlo. | El `BootReceiver` intercepta `BOOT_COMPLETED` y programa las tareas de fondo de inmediato. | ✅ No se requiere abrir la aplicación tras encender la terminal. |
 | **CP-05** | **Permanencia en Geocerca** | Dispositivo ubicado dentro del radio de su sede asignada (ej: Terminal Salitre). | El backend responde estado `EN_GEOCERCA`. | ✅ No se disparan alertas de controversia. |
 | **CP-06** | **Desviación / Fuga de Geocerca** | Mover el dispositivo fuera del radio permitido o asignar placa asociada a otra sede. | El backend detecta la salida y detona: 1) Registro en bitácora de controversias, 2) Mensaje de WhatsApp Wasapi con mapa, 3) Correo a auditoría. | ✅ Alerta inmediata recibida por los supervisores. |
 | **CP-07** | **Compatibilidad AOSP (Sin GMS)** | Instalar y probar en una terminal **Topwise T6D** o **Ciontek CS30** sin servicios de Google. | El `HybridLocationProvider` conmuta limpiamente a `LocationManager` nativo y obtiene coordenadas satelitales directas. | ✅ Cero cierres forzosos (ANR / Crash). |
-| **CP-08** | **Detección de Mock GPS** | Activar una app de "Fake GPS" en el celular de prueba y simular una coordenada. | El agente detecta `location.isMock == true` y lo reporta en los metadatos de auditoría. | ✅ Identificación de intento de suplantación. |
+| **CP-08** | **Detección de Mock GPS** | Activar una app de "Fake GPS" en el celular de prueba y simular una coordenada. | El agente detecta `location.isMock == true` y emite `tamperingAlert: "MOCK_LOCATION_DETECTED"`. | ✅ Identificación y reporte proactivo de intento de suplantación. |
+| **CP-09** | **Sabotaje: Permisos de GPS Revocados** | Ir a *Ajustes de Android -> Aplicaciones -> Servicios FLM -> Permisos* y retirar el permiso de Ubicación. | El agente detecta la revocación, NO falla silenciosamente: emite latido con `tamperingAlert: "PERMISOS_UBICACION_REVOCADOS"` con última coordenada e IP. | ✅ Alerta de sabotaje despachada al backend sin interrupción. |
+| **CP-10** | **Sabotaje: Interruptor GPS Apagado** | Bajar la barra de estado de Android y desactivar el icono de Ubicación / GPS. | El agente detecta el sensor apagado y despacha latido con `tamperingAlert: "GPS_DESACTIVADO"`, últimas coordenadas conocidas e IP. | ✅ Disparo de alerta de seguridad inmediata en Wasapi. |
+| **CP-11** | **Rotación Dinámica de Clave en Portal Web** | Cambiar la clave de telemetría en el portal web (ej: `FLM#Admin2029`). Abrir la app en el dispositivo. | La app valida en tiempo real contra `POST /api/telemetry/admin-auth` y acepta la nueva clave al instante sin reinstalar el binario. | ✅ Gobierno centralizado de credenciales para toda la flota. |
 
 ---
 

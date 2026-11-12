@@ -50,93 +50,86 @@ inventory-telemetry-agent/
 │   └── src/main/
 │       ├── AndroidManifest.xml
 │       ├── java/com/flotalamacarena/telemetry/
-│       │   ├── domain/                      # 1. CAPA DE DOMINIO (Pura, sin dependencias de Android)
-│       │   │   ├── entities/
-│       │   │   │   ├── TelemetryPayload.kt      # Placa, lat, lng, ip, isMock, timestamp
-│       │   │   │   ├── AgentConfig.kt           # Placa asignada, serverUrl, apiKey, intervalHours
-│       │   │   │   └── HeartbeatResult.kt       # Respuesta del backend (isAuthorized, distanceKm, etc.)
-│       │   │   └── repositories/
-│       │   │       ├── ITelemetryGateway.kt     # Puerto de envío HTTP al backend
-│       │   │       ├── ILocationProvider.kt     # Puerto de obtención de coordenadas
-│       │   │       └── IConfigRepository.kt     # Puerto de lectura/escritura cifrada de configuración
+│       │   ├── domain/                      # 1. CAPA DE DOMINIO (100% Kotlin puro, sin android.*)
+│       │   │   ├── models/
+│       │   │   │   ├── TelemetryHeartbeat.kt    # Placa, latitud, longitud, ipAddress, isMock, tamperingAlert
+│       │   │   │   ├── DeviceConfig.kt          # Placa, serverUrl, apiKey, syncIntervalMinutes, isEnrolled
+│       │   │   │   ├── LocationPoint.kt         # Coordenadas, precisión, proveedor, flag mock
+│       │   │   │   ├── HeartbeatResult.kt       # Resultado del latido (Success, Skipped, Error)
+│       │   │   │   └── AdminAuthResult.kt       # Resultado de autenticación (Authorized, Unauthorized, NetworkUnavailable)
+│       │   │   └── ports/
+│       │   │       ├── TelemetryGateway.kt      # Puerto de red hacia POST /api/telemetry/heartbeat y /admin-auth
+│       │   │       ├── LocationProvider.kt      # Puerto de obtención de coordenadas y permisos
+│       │   │       ├── ConfigRepository.kt      # Puerto de lectura/escritura cifrada de configuración
+│       │   │       └── IpResolver.kt            # Puerto para resolución de IP de red
 │       │   │
 │       │   ├── application/                 # 2. CAPA DE APLICACIÓN (Casos de Uso)
 │       │   │   └── usecases/
-│       │   │       ├── SendHeartbeatUseCase.kt  # Orquesta lectura de config -> captura GPS -> envío HTTP
-│       │   │       ├── EnrollDeviceUseCase.kt   # Valida PIN de TI y guarda Placa + URL + API Key
-│       │   │       └── VerifyAdminPinUseCase.kt # Verifica el PIN administrativo para desbloquear ajustes
+│       │   │       ├── SendHeartbeatUseCase.kt  # Orquesta captura GPS -> detección sabotaje -> envío HTTP
+│       │   │       ├── SaveDeviceConfigUseCase.kt # Valida y persiste Placa, Servidor, API Key e Intervalo
+│       │   │       ├── GetDeviceConfigUseCase.kt  # Consulta configuración actual del dispositivo
+│       │   │       └── ValidateAdminPinUseCase.kt # Valida credencial remota (backend) + fallback local SHA-256
 │       │   │
-│       │   ├── infrastructure/              # 3. CAPA DE INFRAESTRUCTURA (Adaptadores Android / Red)
-│       │   │   ├── http/
-│       │   │   │   └── HttpTelemetryGateway.kt  # POST /api/telemetry/heartbeat con X-Device-Api-Key
+│       │   ├── infrastructure/              # 3. CAPA DE INFRAESTRUCTURA (Adaptadores Android y Red)
+│       │   │   ├── network/
+│       │   │   │   ├── HttpTelemetryGateway.kt  # Cliente OkHttp hacia /heartbeat y /admin-auth
+│       │   │   │   └── DeviceIpResolver.kt      # Detección de IP local en interfaces Wi-Fi/4G
 │       │   │   ├── location/
-│       │   │   │   └── HybridLocationProvider.kt# Captura GPS + Network fallback + detector Anti-Mock
-│       │   │   ├── persistence/
-│       │   │   │   └── SecureConfigRepository.kt# EncryptedSharedPreferences + estado último latido
+│       │   │   │   └── HybridLocationProvider.kt# FusedLocation + LocationManager nativo AOSP + detector Anti-Mock
+│       │   │   ├── storage/
+│       │   │   │   └── SecureConfigRepository.kt# EncryptedSharedPreferences (Hardware Keystore)
 │       │   │   └── background/
-│       │   │       ├── BootCompletedReceiver.kt # Escucha el encendido del dispositivo
-│       │   │       ├── TelemetryWorker.kt       # Worker ejecutado por WorkManager
-│       │   │       └── WorkScheduler.kt         # Programa el trabajo de arranque y el periódico
+│       │   │       ├── BootReceiver.kt          # BroadcastReceiver para arranque en frío (BOOT_COMPLETED)
+│       │   │       ├── TelemetryWorker.kt       # Demonio de fondo periódico ejecutado por WorkManager
+│       │   │       └── TelemetryWorkScheduler.kt# Programador de tareas periódicas y de arranque
 │       │   │
-│       │   └── presentation/                # 4. CAPA DE PRESENTACIÓN (UI Diagnóstico y Enrolamiento)
-│       │       ├── MainActivity.kt              # Pantalla de estado (Solo Lectura) + Botón "Sincronizar Ahora"
-│       │       └── EnrollmentDialog.kt          # Modal protegido por PIN para configurar Placa y Servidor
+│       │   └── presentation/                # 4. CAPA DE PRESENTACIÓN (UI Camuflada y Diagnóstico)
+│       │       └── MainActivity.kt          # Login corporativo oscuro ("Servicios FLM") y panel técnico oculto
 │       │
 │       └── res/
-│           ├── xml/network_security_config.xml  # Permite HTTPS y HTTP en red local para pruebas
-│           └── layout/                          # Vistas XML limpias y ligeras
-├── PLAN_ARQUITECTURA.md
-├── AGENTS.md
-└── BITACORA.md
+│           ├── xml/network_security_config.xml  # Tráfico seguro HTTPS y HTTP en red local
+│           └── layout/                          # activity_main.xml, dialog_admin_config.xml, dialog_forgot_password.xml
+├── AGENTS.md                                # Perfiles y responsabilidades del equipo de desarrollo
+├── BITACORA.md                              # Historial de cambios, ADRs y reporte de pruebas de campo
+├── GUIA_QA_PRUEBAS.md                       # Protocolo de QA, proyección scrcpy y casos de prueba
+├── PLAN_ARQUITECTURA.md                     # Plan maestro y especificación técnica
+└── README.md
 ```
 
 ---
 
 ## 📋 4. Plan de Ejecución Paso a Paso (Qué y Cómo lo Haremos)
 
-### Fase 1: Cimientos, Configuración Gradle y Permisos Multi-Versión (Android 11–17)
-* **Qué haremos**: Crear el esqueleto compilable del proyecto Gradle con soporte para Java 21, `minSdk = 29` y `targetSdk = 35`.
-* **Cómo lo haremos**:
-  1. Configurar `AndroidManifest.xml` declarando los permisos:
-     * `INTERNET` y `ACCESS_NETWORK_STATE`.
-     * `ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION` y `ACCESS_BACKGROUND_LOCATION`.
-     * `RECEIVE_BOOT_COMPLETED`.
-     * `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`.
-  2. Configurar `network_security_config.xml` para permitir pruebas contra la IP local del computador de desarrollo (`http://192.168.x.x:3000`) sin que Android 17 bloquee la petición por no ser HTTPS.
+### Fase 1: Cimientos, Configuración Gradle y Permisos Multi-Versión (Android 11–17) [COMPLETADA]
+* **Entregables**: Esqueleto base en Kotlin con `minSdk = 29` y `targetSdk = 35/36`, `AndroidManifest.xml` con permisos de ubicación y arranque, y `network_security_config.xml`.
 
-### Fase 2: Dominio, Casos de Uso y Seguridad por PIN de TI
-* **Qué haremos**: Implementar las entidades puras, el almacenamiento seguro de la Placa y el bloqueo administrativo.
-* **Cómo lo haremos**:
-  1. Programar `SecureConfigRepository` para persistir:
-     * `placa` (ej. `1528-003000`).
-     * `serverUrl` (ej. `http://192.168.1.X:3000`).
-     * `deviceApiKey` (`flm-telemetry-secret-key-2026`).
-     * `adminPinHash` (PIN por defecto inicial: `2026`).
-     * Registro del último latido exitoso (fecha, coordenada, sede detectada y si fue autorizado).
-  2. Programar `SendHeartbeatUseCase` garantizando que si la placa no ha sido enrolada aún, no dispare peticiones vacías.
+### Fase 2: Dominio Puro, Casos de Uso y Persistencia Cifrada [COMPLETADA]
+* **Entregables**: Modelos y puertos puros en `domain/` sin dependencias de Android, casos de uso en `application/` y almacenamiento seguro en hardware mediante `SecureConfigRepository` (`EncryptedSharedPreferences`).
 
-### Fase 3: Proveedor de Ubicación Híbrido y Cliente HTTP
-* **Qué haremos**: Capturar las coordenadas reales del teléfono/POS y enviarlas a `POST /api/telemetry/heartbeat`.
-* **Cómo lo haremos**:
-  1. En `HybridLocationProvider`:
-     * Solicitar coordenada fresca al proveedor `GPS_PROVIDER` y `NETWORK_PROVIDER` con un timeout controlado de 15 segundos; si está bajo techo denso, usar la última ubicación conocida reciente (`getLastKnownLocation`) como respaldo.
-     * Evaluar `location.isFromMockProvider` (API <= 30) y `location.isMock` (API 31–36) para detectar apps de *Fake GPS*.
-  2. En `HttpTelemetryGateway`:
-     * Construir el JSON exacto que espera [`TelemetryController.ts`](file:///home/tecnologia17/desarrollo/cross_Inventory/inventory-node/src/infrastructure/http/controllers/TelemetryController.ts): `placa`, `latitud`, `longitud`, `ipAddress`.
-     * Inyectar la cabecera `X-Device-Api-Key`.
+### Fase 3: Proveedor de Ubicación Híbrido, Cliente HTTP y Detector Anti-Mock [COMPLETADA]
+* **Entregables**: `HybridLocationProvider` con soporte dual AOSP para terminales POS (**Ciontek CS30**, **Topwise T6D**), detector de coordenadas simuladas (*Anti-Mock GPS*), `HttpTelemetryGateway` contra `POST /api/telemetry/heartbeat` y [`GUIA_QA_PRUEBAS.md`](file:///home/tecnologia17/desarrollo/inventory-telemetry-agent/GUIA_QA_PRUEBAS.md).
 
-### Fase 4: Demonio de Arranque (`BOOT_COMPLETED`) y Trabajo Periódico (`WorkManager`)
-* **Qué haremos**: Automatizar el envío sin intervención humana al prender el equipo y cada $N$ horas.
-* **Cómo lo haremos**:
-  1. Crear `BootCompletedReceiver` que escuche `android.intent.action.BOOT_COMPLETED` y `android.intent.action.QUICKBOOT_POWERON`.
-  2. Al recibir el evento, encolar un `OneTimeWorkRequest` en `WorkManager` con la condición `Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()`.
-  3. Así, si la SIM Card 4G tarda 40 segundos en conectar tras encender la POS, Android esperará exactamente a que haya datos móviles y disparará el latido en ese instante.
-  4. Configurar además un `PeriodicWorkRequest` (configurable, por defecto cada 8 horas) para equipos que permanecen encendidos 24/7.
+### Fase 4: Demonio de Arranque en Frío y Ciclo Periódico (`WorkManager`) [COMPLETADA]
+* **Entregables**: `BootReceiver` (`BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`) encolando tareas resilientes en `WorkManager` con política de reintentos exponencial y restricción `NetworkType.CONNECTED` para tolerar demoras en el enganche de la red móvil o Wi-Fi.
 
-### Fase 5: Interfaz de Diagnóstico, Enrolamiento y Pruebas Reales en Celular (Android 17)
-* **Qué haremos**: Construir la pantalla principal y probar el `.apk` en vivo en el celular del usuario y luego en POS.
-* **Cómo lo haremos**:
-  1. **Modo Operario (Por defecto)**: Muestra el estado del equipo, la Placa vinculada, el estado de los permisos (GPS Todo el Tiempo + Batería), el resultado del último latido y un botón **`📡 Sincronizar Ahora`**.
-  2. **Modo Administrador TI (Botón ⚙️ Configurar)**: Solicita el PIN (`2026`), y al desbloquear permite editar la Placa, la URL del servidor, la API Key y botones directos para conceder el permiso *"Permitir todo el tiempo"* y *"Excluir de ahorro de batería"*.
-  3. Compilar el `.apk`, instalarlo en el celular con Android 17 vía `adb install` o descarga local, y verificar la llegada del latido al Dashboard de Angular y la alerta de WhatsApp en vivo.
+### Fase 5: Interfaz UI, Compilación `.apk` y Pruebas en Vivo [COMPLETADA]
+* **Entregables**: Interfaz de enrolamiento y diagnóstico con ViewBinding, gestión escalonada de permisos en Android 11–17 y generación del binario instalable `app-debug.apk`.
+
+### Fase 5.1: Inspección Visual en Vivo con `scrcpy` + Túnel Inverso `adb reverse` [COMPLETADA]
+* **Entregables**: Proyección en monitor a 60 FPS con control de mouse y teclado sin instalar apps extra en el celular, permitiendo iteración visual de 3 a 5 segundos (`./gradlew installDebug`) y enlace directo al backend con `adb reverse tcp:3000 tcp:3000`.
+
+### Fase 5.2: Camuflaje Anti-Tampering (*Security by Camouflage*) [COMPLETADA]
+* **Entregables**: Rediseño de identidad visual a **`Servicios FLM`** con microbús corporativo e interfaz de login institucional oscura. Panel técnico de enrolamiento oculto tras credenciales de TI.
+
+### Fase 5.3: Blindaje Criptográfico SHA-256 + Salt y Rate Limiting [COMPLETADA]
+* **Entregables**: Llave maestra de emergencia `FLM#Admin2026` con hash SHA-256 y salt fija `FLM_TELEMETRY_SALT_2026_MACARENA`. Rate limiting activo de 3 intentos fallidos consecutivos que activa un bloqueo estricto de 300 segundos (5 minutos) con mensaje neutral.
+
+### Fase 5.4: Perfeccionamiento de Camuflaje y Diálogo de Recuperación [COMPLETADA]
+* **Entregables**: Microbús institucional estático, mensaje estándar de login (*"Usuario o contraseña incorrectos. Por favor verifique sus datos."*) y modal creíble de recuperación de contraseña hacia Mesa de Ayuda de TI.
+
+### Fase 5.5: Autenticación Administrativa Centralizada Híbrida (`inventory-node`) [COMPLETADA]
+* **Entregables**: Consulta en línea a `POST /api/telemetry/admin-auth` para delegar la autoridad de contraseñas a la base de datos de `cross_Inventory` (`telemetry_settings.admin_password`), permitiendo que el Administrador cambie la clave de toda la flota desde el portal web en segundos. Respaldo offline automático con hash local cuando el dispositivo no tiene red.
+
+### Fase 5.6: Detección Activa de Sabotaje (Permisos Revocados & GPS Apagado) [COMPLETADA]
+* **Entregables**: Supervisión continua de permisos de Android (`ACCESS_FINE_LOCATION`) y estado del GPS. Si se detecta manipulación, la app no falla silenciosamente: emite de inmediato un latido de emergencia con `tamperingAlert` (`PERMISOS_UBICACION_REVOCADOS`, `GPS_DESACTIVADO`, `MOCK_LOCATION_DETECTED`) adjuntando las últimas coordenadas registradas en memoria segura y la IP local. Reutilización de la plantilla de WhatsApp aprobada en Meta (`alerta_desviacion_inventario`).
 
