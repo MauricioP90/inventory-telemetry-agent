@@ -80,6 +80,9 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
   1. No permitir cambios de contraseña aislados en el dispositivo móvil.
   2. Centralizar la autoridad de la contraseña técnica en el servidor (`POST /api/telemetry/admin-auth` en `inventory-node`), permitiendo que TI revoque o cambie la clave en el backend para toda la flota en segundos.
   3. Mantener el hash local (`FLM#Admin2026`) como mecanismo de respaldo fuera de línea (*Offline Fallback*) únicamente cuando el equipo esté en bodegas o zonas sin cobertura de red.
+* **Procedimiento Operativo para Rotar la Contraseña**:
+  1. El Administrador de TI edita la variable `TELEMETRY_ADMIN_PASSWORD` en el `.env` del servidor `inventory-node` (o a través del portal web en `telemetry_settings`).
+  2. Al recargar el backend, todas las terminales POS y smartphones exigen la nueva contraseña de inmediato, invalidando la anterior sin tocar ningún equipo en campo.
 
 ---
 
