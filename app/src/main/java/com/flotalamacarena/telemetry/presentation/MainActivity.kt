@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
     private val getConfigUseCase by lazy { GetDeviceConfigUseCase(configRepo) }
     private val saveConfigUseCase by lazy { SaveDeviceConfigUseCase(configRepo) }
-    private val validatePinUseCase by lazy { ValidateAdminPinUseCase() }
+    private val validatePinUseCase by lazy { ValidateAdminPinUseCase(configRepo, telemetryGateway) }
     private val sendHeartbeatUseCase by lazy {
         SendHeartbeatUseCase(configRepo, locationProvider, telemetryGateway, ipResolver)
     }

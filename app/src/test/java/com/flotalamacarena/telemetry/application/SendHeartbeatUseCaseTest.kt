@@ -147,6 +147,15 @@ class SendHeartbeatUseCaseTest {
             sentHeartbeats.add(heartbeat)
             return HeartbeatResult.Success("OK", 201)
         }
+
+        override suspend fun verifyAdminPassword(
+            serverUrl: String,
+            apiKey: String,
+            placa: String,
+            password: String
+        ): com.flotalamacarena.telemetry.domain.models.AdminAuthResult {
+            return com.flotalamacarena.telemetry.domain.models.AdminAuthResult.Authorized
+        }
     }
 
     class FakeIpResolver : IpResolver {

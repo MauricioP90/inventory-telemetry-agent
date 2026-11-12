@@ -1,14 +1,22 @@
 package com.flotalamacarena.telemetry.application.usecases
 
+import com.flotalamacarena.telemetry.domain.models.AdminAuthResult
+import com.flotalamacarena.telemetry.domain.ports.ConfigRepository
+import com.flotalamacarena.telemetry.domain.ports.TelemetryGateway
 import java.security.MessageDigest
 
 /**
- * Caso de uso criptográfico para autenticar al Administrador de TI mediante
- * hashing SHA-256 con Salt corporativo y protección anti-fuerza bruta (Rate Limiting).
+ * Caso de uso para autenticar al Administrador de TI:
+ * 1. Prioridad: Consulta remota centralizada en el backend (POST /api/telemetry/admin-auth).
+ * 2. Fallback resiliente: Si no hay red o el servidor está inalcanzable, valida mediante
+ *    hashing local SHA-256 + Salt corporativo.
+ * 3. Protección activa anti-fuerza bruta (Rate Limiting de 3 intentos / 300 segundos).
  * 
  * Capa Application: 100% Kotlin puro sin dependencias de android.*.
  */
 class ValidateAdminPinUseCase(
+    private val configRepository: ConfigRepository? = null,
+    private val telemetryGateway: TelemetryGateway? = null,
     private val salt: String = DEFAULT_SALT,
     private val expectedHash: String = DEFAULT_HASHED_PASSWORD
 ) {
@@ -22,7 +30,10 @@ class ValidateAdminPinUseCase(
     private var failedAttempts = 0
     private var lockoutUntilTimestamp = 0L
 
-    fun execute(enteredSecret: String, currentTimeMillis: Long = System.currentTimeMillis()): AuthResult {
+    suspend fun execute(
+        enteredSecret: String,
+        currentTimeMillis: Long = System.currentTimeMillis()
+    ): AuthResult {
         // Verificar si se encuentra bloqueado por exceder intentos
         if (currentTimeMillis < lockoutUntilTimestamp) {
             val remainingSec = (lockoutUntilTimestamp - currentTimeMillis) / 1000L
@@ -33,6 +44,37 @@ class ValidateAdminPinUseCase(
             return registerFailedAttempt(currentTimeMillis)
         }
 
+        // Intento 1: Validación remota contra el backend si el equipo está enrolado y con pasarela disponible
+        if (configRepository != null && telemetryGateway != null) {
+            val config = configRepository.getConfig()
+            if (config.isEnrolled && config.serverUrl.isNotBlank() && config.apiKey.isNotBlank()) {
+                when (val remoteResult = telemetryGateway.verifyAdminPassword(
+                    serverUrl = config.serverUrl,
+                    apiKey = config.apiKey,
+                    placa = config.placa,
+                    password = enteredSecret.trim()
+                )) {
+                    is AdminAuthResult.Authorized -> {
+                        failedAttempts = 0
+                        lockoutUntilTimestamp = 0L
+                        return AuthResult.Success
+                    }
+                    is AdminAuthResult.Unauthorized -> {
+                        return registerFailedAttempt(currentTimeMillis)
+                    }
+                    is AdminAuthResult.NetworkUnavailable -> {
+                        // Fallback local: si el servidor está caído o sin red, recurre a la clave local
+                        return validateLocalHash(enteredSecret, currentTimeMillis)
+                    }
+                }
+            }
+        }
+
+        // Intento 2 (Fallback o primera instalación antes de enrolar): Validación con Hash SHA-256 local
+        return validateLocalHash(enteredSecret, currentTimeMillis)
+    }
+
+    private fun validateLocalHash(enteredSecret: String, currentTimeMillis: Long): AuthResult {
         val calculatedHash = computeSha256(salt + enteredSecret.trim())
         return if (calculatedHash.equals(expectedHash, ignoreCase = true)) {
             // Éxito: Reiniciar contador de intentos fallidos

@@ -1,6 +1,7 @@
 package com.flotalamacarena.telemetry.infrastructure.network
 
 import android.util.Log
+import com.flotalamacarena.telemetry.domain.models.AdminAuthResult
 import com.flotalamacarena.telemetry.domain.models.HeartbeatResult
 import com.flotalamacarena.telemetry.domain.models.TelemetryHeartbeat
 import com.flotalamacarena.telemetry.domain.ports.TelemetryGateway
@@ -90,6 +91,58 @@ class HttpTelemetryGateway(
         }
     }
 
+    override suspend fun verifyAdminPassword(
+        serverUrl: String,
+        apiKey: String,
+        placa: String,
+        password: String
+    ): AdminAuthResult = withContext(Dispatchers.IO) {
+        val endpoint = buildAdminAuthEndpoint(serverUrl)
+
+        val jsonBody = JSONObject().apply {
+            put("placa", placa)
+            put("password", password)
+        }.toString()
+
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val requestBody = jsonBody.toRequestBody(mediaType)
+
+        val request = Request.Builder()
+            .url(endpoint)
+            .addHeader(HEADER_API_KEY, apiKey)
+            .addHeader("Accept", "application/json")
+            .post(requestBody)
+            .build()
+
+        try {
+            client.newCall(request).execute().use { response ->
+                val statusCode = response.code
+                val responseBody = response.body?.string() ?: ""
+
+                when (statusCode) {
+                    200 -> {
+                        Log.i(TAG, "🔑 Autenticación administrativa aprobada por el servidor ($statusCode).")
+                        AdminAuthResult.Authorized
+                    }
+                    401 -> {
+                        Log.w(TAG, "⛔ Credencial administrativa rechazada por el servidor (401): $responseBody")
+                        AdminAuthResult.Unauthorized("Credencial rechazada por el servidor central.")
+                    }
+                    else -> {
+                        Log.w(TAG, "⚠️ Respuesta inesperada del servidor ($statusCode): $responseBody")
+                        AdminAuthResult.NetworkUnavailable("Código de respuesta inesperado: $statusCode")
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            Log.w(TAG, "📡 Servidor central inalcanzable para validar clave (${e.javaClass.simpleName}): ${e.message}")
+            AdminAuthResult.NetworkUnavailable(e.message ?: "Servidor inalcanzable")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error al verificar clave de administración con el servidor: ${e.message}", e)
+            AdminAuthResult.NetworkUnavailable(e.message ?: "Error desconocido")
+        }
+    }
+
     private fun buildEndpoint(baseUrl: String): String {
         val cleanBase = baseUrl.trim().removeSuffix("/")
         return if (cleanBase.endsWith(ENDPOINT_PATH)) {
@@ -99,9 +152,19 @@ class HttpTelemetryGateway(
         }
     }
 
+    private fun buildAdminAuthEndpoint(baseUrl: String): String {
+        val cleanBase = baseUrl.trim().removeSuffix("/")
+        return if (cleanBase.endsWith(ENDPOINT_ADMIN_AUTH)) {
+            cleanBase
+        } else {
+            "$cleanBase$ENDPOINT_ADMIN_AUTH"
+        }
+    }
+
     companion object {
         private const val TAG = "HttpTelemetryGateway"
         private const val ENDPOINT_PATH = "/api/telemetry/heartbeat"
+        private const val ENDPOINT_ADMIN_AUTH = "/api/telemetry/admin-auth"
         private const val HEADER_API_KEY = "X-Device-Api-Key"
 
         fun defaultClient(): OkHttpClient {
