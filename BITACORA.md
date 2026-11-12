@@ -73,6 +73,13 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
   3. Protección activa anti-fuerza bruta en `ValidateAdminPinUseCase`: al acumular 3 intentos fallidos consecutivos, el sistema se bloquea por 300 segundos (5 minutos) rechazando cualquier intento adicional.
   4. Mensaje disuasorio: *"Acceso restringido: Contacte al Administrador de TI."*
 
+### ADR-007: Centralización de Autenticación de Administración en el Backend (12/Nov/2026)
+* **Contexto**: Permitir que la clave administrativa se cambie localmente en el dispositivo crea el riesgo de secuestro de terminal (*Device Takeover*) si alguien la descubre y bloquea al personal de TI.
+* **Decisión**:
+  1. No permitir cambios de contraseña aislados en el dispositivo móvil.
+  2. Centralizar la autoridad de la contraseña técnica en el servidor (`POST /api/telemetry/admin-auth` en `inventory-node`), permitiendo que TI revoque o cambie la clave en el backend para toda la flota en segundos.
+  3. Mantener el hash local (`FLM#Admin2026`) como mecanismo de respaldo fuera de línea (*Offline Fallback*) únicamente cuando el equipo esté en bodegas o zonas sin cobertura de red.
+
 ---
 
 ## 🧪 4. Guía Rápida para Pruebas y Ajustes Visuales con el Celular (Fase 5)
