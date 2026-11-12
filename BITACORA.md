@@ -80,10 +80,13 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 * **Decisión**:
   1. No permitir cambios de contraseña aislados en el dispositivo móvil.
   2. Centralizar la autoridad de la contraseña técnica en el servidor (`POST /api/telemetry/admin-auth` en `inventory-node`), permitiendo que TI revoque o cambie la clave en el backend para toda la flota en segundos.
-  3. Mantener el hash local (`FLM#Admin2026`) como mecanismo de respaldo fuera de línea (*Offline Fallback*) únicamente cuando el equipo esté en bodegas o zonas sin cobertura de red.
+  3. **Jerarquía Dual de Seguridad**:
+     * **Con Internet / Online**: La app consulta al servidor y valida contra la contraseña vigente en la base de datos (`telemetry_settings.admin_password`, ej. `FLM#Admin2029`), cambiable desde el portal web en Catálogos -> Telemetría.
+     * **Sin Internet / Offline**: Si el dispositivo está en una bodega sin Wi-Fi o sin chip 4G, hace *fallback* al hash seguro SHA-256 local con la llave de emergencia (`FLM#Admin2026`).
+  4. La app permite validar en línea incluso antes del enrolamiento formal (usando el endpoint predeterminado `http://localhost:3000` o la URL configurada), asegurando que el técnico de TI siempre pueda usar la clave vigente del portal web.
 * **Procedimiento Operativo para Rotar la Contraseña**:
-  1. El Administrador de TI edita la variable `TELEMETRY_ADMIN_PASSWORD` en el `.env` del servidor `inventory-node` (o a través del portal web en `telemetry_settings`).
-  2. Al recargar el backend, todas las terminales POS y smartphones exigen la nueva contraseña de inmediato, invalidando la anterior sin tocar ningún equipo en campo.
+  1. El Administrador de TI edita la variable `TELEMETRY_ADMIN_PASSWORD` en el `.env` del servidor `inventory-node` o cambia la clave directamente en la interfaz web de Catálogos.
+  2. Todas las terminales POS y smartphones exigen la nueva contraseña de inmediato al estar en línea, invalidando la anterior sin tocar ningún equipo en campo.
 
 ### ADR-008: Detección Activa de Sabotaje sin Falla Silenciosa (12/Nov/2026)
 * **Contexto**: Un operario podría intentar evadir el rastreo entrando a los Ajustes de Android y revocando los permisos de ubicación a la app, o apagando el interruptor de GPS en la barra de notificaciones. Si el agente simplemente espera permisos o se queda en silencio, el equipo se vuelve invisible sin que TI se entere.
