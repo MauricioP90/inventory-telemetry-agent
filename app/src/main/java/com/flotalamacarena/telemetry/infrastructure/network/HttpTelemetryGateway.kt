@@ -35,6 +35,7 @@ class HttpTelemetryGateway(
             put("latitud", heartbeat.latitud)
             put("longitud", heartbeat.longitud)
             put("ipAddress", heartbeat.ipAddress)
+            heartbeat.tamperingAlert?.let { put("tamperingAlert", it) }
         }.toString()
 
         val mediaType = "application/json; charset=utf-8".toMediaType()

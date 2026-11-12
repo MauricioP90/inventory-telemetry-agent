@@ -9,4 +9,5 @@ interface LocationProvider {
     suspend fun getCurrentLocation(timeoutMillis: Long = 15000L): LocationPoint?
     fun getLastKnownLocation(): LocationPoint?
     fun isLocationEnabled(): Boolean
+    fun hasLocationPermission(): Boolean
 }

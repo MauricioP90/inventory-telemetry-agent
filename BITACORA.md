@@ -41,6 +41,7 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 | **Fase 5.3** | **Blindaje Criptográfico & Anti-Fuerza Bruta**: Hashing SHA-256 + Salt (`FLM#Admin2026`), rate limiting de 3 intentos / bloqueo de 300s, mensaje disuasorio neutral y suite de pruebas unitarias al 100%. | `ValidateAdminPinUseCase.kt`, `ValidateAdminPinUseCaseTest.kt`, `MainActivity.kt` | ✅ **Completado** | ✅ Sí (10/Nov/2026) |
 | **Fase 5.4** | **Perfeccionamiento de Camuflaje (Login Realista & Recuperación)**: Eliminación del gesto en microbús (ilustración estática), unificación en Acceso 1 (`FLM#Admin2026`), respuestas de error estándar de login (*"Usuario o contraseña incorrectos"*) y modal creíble de recuperación de credenciales hacia Mesa de Ayuda. | `MainActivity.kt`, `dialog_forgot_password.xml`, `strings.xml`, `ServiciosFLM.apk` | ✅ **Completado** | ✅ Sí (12/Nov/2026) |
 | **Fase 5.5** | **Autenticación Administrativa Híbrida (Remota Backend + Offline Fallback)**: Integración con `POST /api/telemetry/admin-auth` para delegar la autoridad de credenciales a `inventory-node` evitando secuestro de terminales, con fallback local resiliente a SHA-256 cuando no hay red. | `AdminAuthResult.kt`, `TelemetryGateway.kt`, `HttpTelemetryGateway.kt`, `ValidateAdminPinUseCase.kt` | ✅ **Completado** | ✅ Sí (12/Nov/2026) |
+| **Fase 5.6** | **Detección Activa de Sabotaje (Permisos Revocados & GPS Apagado)**: Supervisión activa de permisos en Android (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`) y estado de GPS. Si se revocan o apagan, no detiene el agente: emite de inmediato un latido de emergencia con `tamperingAlert`, últimas coordenadas válidas e IP hacia `POST /api/telemetry/heartbeat`. | `SendHeartbeatUseCase.kt`, `LocationProvider.kt`, `HybridLocationProvider.kt`, `HttpTelemetryGateway.kt` | ✅ **Completado** | ✅ Sí (12/Nov/2026) |
 
 ---
 
@@ -83,6 +84,14 @@ Este documento es la **guía central y bitácora de seguimiento** del desarrollo
 * **Procedimiento Operativo para Rotar la Contraseña**:
   1. El Administrador de TI edita la variable `TELEMETRY_ADMIN_PASSWORD` en el `.env` del servidor `inventory-node` (o a través del portal web en `telemetry_settings`).
   2. Al recargar el backend, todas las terminales POS y smartphones exigen la nueva contraseña de inmediato, invalidando la anterior sin tocar ningún equipo en campo.
+
+### ADR-008: Detección Activa de Sabotaje sin Falla Silenciosa (12/Nov/2026)
+* **Contexto**: Un operario podría intentar evadir el rastreo entrando a los Ajustes de Android y revocando los permisos de ubicación a la app, o apagando el interruptor de GPS en la barra de notificaciones. Si el agente simplemente espera permisos o se queda en silencio, el equipo se vuelve invisible sin que TI se entere.
+* **Decisión**:
+  1. Los permisos de red (`INTERNET`, `ACCESS_NETWORK_STATE`) son permisos normales de instalación que el usuario **no puede revocar** en Android.
+  2. Ante la falta de permisos de GPS (`!hasLocationPermission()`) o sensor apagado (`!isLocationEnabled()`), el caso de uso `SendHeartbeatUseCase` genera inmediatamente un latido de emergencia con el campo `tamperingAlert: "PERMISOS_UBICACION_REVOCADOS"` o `"GPS_DESACTIVADO"`.
+  3. Se envían las últimas coordenadas GPS válidas guardadas en almacenamiento seguro junto a la IP local de conexión.
+  4. El servidor `inventory-node` clasifica este latido como `CONTROVERSIA_UBICACION` y dispara la alerta inmediata a WhatsApp vía Wasapi, reutilizando la plantilla oficial de Meta.
 
 ---
 

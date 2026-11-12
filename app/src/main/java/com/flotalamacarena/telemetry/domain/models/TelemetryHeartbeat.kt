@@ -10,5 +10,6 @@ data class TelemetryHeartbeat(
     val latitud: Double,
     val longitud: Double,
     val ipAddress: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val tamperingAlert: String? = null
 )

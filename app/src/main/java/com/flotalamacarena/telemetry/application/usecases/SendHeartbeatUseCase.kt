@@ -29,7 +29,38 @@ class SendHeartbeatUseCase(
             return HeartbeatResult.Skipped("Dispositivo no enrolado o configuración incompleta.")
         }
 
-        // Obtener ubicación actual con timeout o recurrir a la última registrada
+        // 1. Detección Activa de Sabotaje (Anti-Tampering)
+        val hasPermission = locationProvider.hasLocationPermission()
+        val isGpsEnabled = locationProvider.isLocationEnabled()
+
+        var tamperingAlert: String? = when {
+            !hasPermission -> "PERMISOS_UBICACION_REVOCADOS"
+            !isGpsEnabled -> "GPS_DESACTIVADO"
+            else -> null
+        }
+
+        // Si los permisos fueron revocados o el GPS está apagado, emite reporte inmediato con la última ubicación
+        if (tamperingAlert != null) {
+            val lastCoords = configRepository.getLastKnownCoordinates()
+            val ipAddress = ipResolver.resolveIpAddress()
+
+            val alertHeartbeat = TelemetryHeartbeat(
+                placa = config.placa,
+                latitud = lastCoords?.first ?: 0.0,
+                longitud = lastCoords?.second ?: 0.0,
+                ipAddress = ipAddress,
+                timestamp = System.currentTimeMillis(),
+                tamperingAlert = tamperingAlert
+            )
+
+            return telemetryGateway.sendHeartbeat(
+                heartbeat = alertHeartbeat,
+                serverUrl = config.serverUrl,
+                apiKey = config.apiKey
+            )
+        }
+
+        // 2. Obtener ubicación actual con timeout o recurrir a la última registrada
         val location: LocationPoint? = locationProvider.getCurrentLocation(timeoutMillis = 15000L)
             ?: locationProvider.getLastKnownLocation()
             ?: run {
@@ -51,9 +82,9 @@ class SendHeartbeatUseCase(
             )
         }
 
-        // Advertencia si la ubicación proviene de un proveedor simulado (Mock GPS)
+        // 3. Detección de Suplantación de Coordenadas (Mock GPS)
         if (location.isMock) {
-            // Se registra para fines de auditoría pero no bloquea el reporte
+            tamperingAlert = "MOCK_LOCATION_DETECTED"
         }
 
         val ipAddress = ipResolver.resolveIpAddress()
@@ -63,7 +94,8 @@ class SendHeartbeatUseCase(
             latitud = location.latitude,
             longitud = location.longitude,
             ipAddress = ipAddress,
-            timestamp = System.currentTimeMillis()
+            timestamp = System.currentTimeMillis(),
+            tamperingAlert = tamperingAlert
         )
 
         val result = telemetryGateway.sendHeartbeat(

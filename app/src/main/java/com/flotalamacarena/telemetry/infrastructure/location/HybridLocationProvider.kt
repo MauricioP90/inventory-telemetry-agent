@@ -1,7 +1,9 @@
 package com.flotalamacarena.telemetry.infrastructure.location
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -9,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
+import androidx.core.content.ContextCompat
 import com.flotalamacarena.telemetry.domain.models.LocationPoint
 import com.flotalamacarena.telemetry.domain.ports.LocationProvider
 import com.google.android.gms.common.ConnectionResult
@@ -192,6 +195,18 @@ class HybridLocationProvider(
         } catch (e: Exception) {
             false
         }
+    }
+
+    override fun hasLocationPermission(): Boolean {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        return fineGranted || coarseGranted
     }
 
     /**
