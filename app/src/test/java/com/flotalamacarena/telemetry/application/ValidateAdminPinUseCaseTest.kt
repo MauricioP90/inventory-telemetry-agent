@@ -143,7 +143,7 @@ class ValidateAdminPinUseCaseTest {
     }
 
     class FakeTelemetryGateway : TelemetryGateway {
-        var authResponseToReturn: AdminAuthResult = AdminAuthResult.Authorized
+        var authResponseToReturn: AdminAuthResult? = null
         var lastPasswordChecked: String? = null
 
         override suspend fun sendHeartbeat(
@@ -159,7 +159,11 @@ class ValidateAdminPinUseCaseTest {
             password: String
         ): AdminAuthResult {
             lastPasswordChecked = password
-            return authResponseToReturn
+            return authResponseToReturn ?: if (password == "NuevaClaveRemota2027") {
+                AdminAuthResult.Authorized
+            } else {
+                AdminAuthResult.Unauthorized("Credencial invalida")
+            }
         }
     }
 }

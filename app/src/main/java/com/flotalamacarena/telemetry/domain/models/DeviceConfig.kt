@@ -15,7 +15,8 @@ data class DeviceConfig(
         get() = placa.isNotBlank() && serverUrl.isNotBlank() && apiKey.isNotBlank()
 
     companion object {
-        const val DEFAULT_SERVER_URL = "http://10.0.2.2:3000"
+        const val DEFAULT_SERVER_URL = "http://localhost:3000"
+        const val DEFAULT_API_KEY = "flm-telemetry-secret-key-2026"
         const val DEFAULT_INTERVAL_MINUTES = 15
         const val MIN_INTERVAL_MINUTES = 5
         const val MAX_INTERVAL_MINUTES = 120

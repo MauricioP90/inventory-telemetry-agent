@@ -44,40 +44,55 @@ class ValidateAdminPinUseCase(
             return registerFailedAttempt(currentTimeMillis)
         }
 
-        // Intento 1: Validación remota contra el backend si el equipo está enrolado y con pasarela disponible
+        // Intento 1: Validación remota contra el backend (tanto enrolado como con endpoint por defecto)
         if (configRepository != null && telemetryGateway != null) {
             val config = configRepository.getConfig()
-            if (config.isEnrolled && config.serverUrl.isNotBlank() && config.apiKey.isNotBlank()) {
-                when (val remoteResult = telemetryGateway.verifyAdminPassword(
-                    serverUrl = config.serverUrl,
-                    apiKey = config.apiKey,
-                    placa = config.placa,
-                    password = enteredSecret.trim()
-                )) {
-                    is AdminAuthResult.Authorized -> {
+            val serverUrl = if (config.serverUrl.isNotBlank() && config.serverUrl != "http://10.0.2.2:3000") {
+                config.serverUrl
+            } else {
+                com.flotalamacarena.telemetry.domain.models.DeviceConfig.DEFAULT_SERVER_URL
+            }
+            val apiKey = if (config.apiKey.isNotBlank()) config.apiKey else com.flotalamacarena.telemetry.domain.models.DeviceConfig.DEFAULT_API_KEY
+            val placa = if (config.placa.isNotBlank()) config.placa else "FLM-DEVICE"
+
+            when (val remoteResult = telemetryGateway.verifyAdminPassword(
+                serverUrl = serverUrl,
+                apiKey = apiKey,
+                placa = placa,
+                password = enteredSecret.trim()
+            )) {
+                is AdminAuthResult.Authorized -> {
+                    failedAttempts = 0
+                    lockoutUntilTimestamp = 0L
+                    return AuthResult.Success
+                }
+                is AdminAuthResult.Unauthorized -> {
+                    // Si el servidor rechaza, se verifica si coincide con la clave maestra local de emergencia
+                    if (validateLocalHashDirect(enteredSecret)) {
                         failedAttempts = 0
                         lockoutUntilTimestamp = 0L
                         return AuthResult.Success
                     }
-                    is AdminAuthResult.Unauthorized -> {
-                        return registerFailedAttempt(currentTimeMillis)
-                    }
-                    is AdminAuthResult.NetworkUnavailable -> {
-                        // Fallback local: si el servidor está caído o sin red, recurre a la clave local
-                        return validateLocalHash(enteredSecret, currentTimeMillis)
-                    }
+                    return registerFailedAttempt(currentTimeMillis)
+                }
+                is AdminAuthResult.NetworkUnavailable -> {
+                    // Fallback local: si el servidor está caído o sin red, recurre a la clave local
+                    return validateLocalHash(enteredSecret, currentTimeMillis)
                 }
             }
         }
 
-        // Intento 2 (Fallback o primera instalación antes de enrolar): Validación con Hash SHA-256 local
+        // Intento 2 (Fallback si no hay pasarela inyectada): Validación con Hash SHA-256 local
         return validateLocalHash(enteredSecret, currentTimeMillis)
     }
 
-    private fun validateLocalHash(enteredSecret: String, currentTimeMillis: Long): AuthResult {
+    private fun validateLocalHashDirect(enteredSecret: String): Boolean {
         val calculatedHash = computeSha256(salt + enteredSecret.trim())
-        return if (calculatedHash.equals(expectedHash, ignoreCase = true)) {
-            // Éxito: Reiniciar contador de intentos fallidos
+        return calculatedHash.equals(expectedHash, ignoreCase = true)
+    }
+
+    private fun validateLocalHash(enteredSecret: String, currentTimeMillis: Long): AuthResult {
+        return if (validateLocalHashDirect(enteredSecret)) {
             failedAttempts = 0
             lockoutUntilTimestamp = 0L
             AuthResult.Success
