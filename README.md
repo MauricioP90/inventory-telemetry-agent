@@ -49,6 +49,7 @@ inventory-telemetry-agent/
 ├── AGENTS.md                     # Perfiles, responsabilidades y reglas de oro del equipo de desarrollo
 ├── BITACORA.md                   # Bitácora detallada de hitos, ADRs y pruebas de campo en vivo
 ├── GUIA_QA_PRUEBAS.md            # Guía para QA, comandos ADB, inspección scrcpy y matriz de pruebas
+├── MANUAL_USUARIO.md             # Manual de usuario, enrolamiento, permisos y operación técnica
 ├── PLAN_ARQUITECTURA.md          # Especificación técnica, arquitectura hexagonal y plan de fases
 └── README.md
 ```
